@@ -1,4 +1,4 @@
-*.txt
+questions/*.txt
 venv/
 .idea/
 __pycache__/
