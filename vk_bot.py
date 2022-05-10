@@ -2,12 +2,12 @@ import os
 import random
 
 import redis
-import vk_api as vk
 from environs import Env
+from vk_api import VkApi
 from vk_api.keyboard import VkKeyboard
-from vk_api.longpoll import VkLongPoll, VkEventType
+from vk_api.longpoll import VkEventType, VkLongPoll
 
-from main import StateEnum, reg_user_question, get_correct_answer
+from main import StateEnum, get_correct_answer, reg_user_question
 
 PLATFORM_PREFIX = "vk"
 
@@ -42,7 +42,7 @@ def start(user_id):
         user_id=user_id,
         keyboard=keyboard_maker(buttons, 2),
         message=text,
-        random_id=random.randint(1, 1000)
+        random_id=random.randint(1, 1000),
     )
     return StateEnum.FIRST_CHOOSING.value
 
@@ -55,9 +55,7 @@ def handle_first_choice(user_id, user_message):
 def send_new_question(user_id):
     question_text = reg_user_question(redis_db, PLATFORM_PREFIX, user_id)
     vk_api.messages.send(
-        user_id=user_id,
-        message=question_text,
-        random_id=random.randint(1, 1000)
+        user_id=user_id, message=question_text, random_id=random.randint(1, 1000)
     )
     return StateEnum.ATTEMPT.value
 
@@ -66,9 +64,7 @@ def handle_giving_up(user_id):
     answer = get_correct_answer(redis_db, PLATFORM_PREFIX, user_id)
     text = f"Правильный ответ : {answer}"
     vk_api.messages.send(
-        user_id=user_id,
-        message=text,
-        random_id=random.randint(1, 1000)
+        user_id=user_id, message=text, random_id=random.randint(1, 1000)
     )
     return send_new_question(user_id)
 
@@ -80,19 +76,19 @@ def handle_solution_attempt(user_id, attempt):
     if attempt.lower() == correct_answer.lower():
         text = "Маладес"
         vk_api.messages.send(
-            user_id=user_id,
-            message=text,
-            random_id=random.randint(1, 1000)
+            user_id=user_id, message=text, random_id=random.randint(1, 1000)
         )
         return send_new_question(user_id)
 
-    buttons = ["Сдаться",]
+    buttons = [
+        "Сдаться",
+    ]
     text = "Неправильно… Попробуешь ещё раз?"
     vk_api.messages.send(
         user_id=user_id,
         keyboard=keyboard_maker(buttons, 1),
         message=text,
-        random_id=random.randint(1, 1000)
+        random_id=random.randint(1, 1000),
     )
     return StateEnum.ATTEMPT.value
 
@@ -121,7 +117,7 @@ if __name__ == "__main__":
     redis_db = redis.Redis(host=REDIS_URL, port=REDIS_PORT, db=0, password=REDIS_PASS)
 
     VK_TOKEN = os.getenv("VK_TOKEN")
-    vk_session = vk.VkApi(token=VK_TOKEN)
+    vk_session = VkApi(token=VK_TOKEN)
     vk_api = vk_session.get_api()
     longpoll = VkLongPoll(vk_session)
     for event in longpoll.listen():

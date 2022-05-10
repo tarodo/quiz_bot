@@ -13,8 +13,10 @@ def get_question(file_name):
     with open(file_name, "r", encoding="KOI8-R") as f:
         file_contents = f.read()
     data = file_contents.split("\n\n")
-    questions = [q[q.find(":") + 2:].replace("\n", "") for q in data if q.startswith("Вопрос")]
-    answers = [q[q.find(":") + 2:] for q in data if q.startswith("Ответ")]
+    questions = [
+        q[q.find(":") + 2 :].replace("\n", "") for q in data if q.startswith("Вопрос")
+    ]
+    answers = [q[q.find(":") + 2 :] for q in data if q.startswith("Ответ")]
     if len(questions) == len(answers):
         quiz = dict(zip(questions, answers))
     return quiz
@@ -45,7 +47,7 @@ def reg_user_question(redis_db, prefix, user_id):
 
 
 def clear_answer(answer):
-    correct_answer = answer[:min(answer.find("."), answer.find("("))]
+    correct_answer = answer[: min(answer.find("."), answer.find("("))]
     return correct_answer.strip()
 
 
@@ -64,5 +66,5 @@ def main():
     print(get_random_question())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
