@@ -8,6 +8,9 @@ class StateEnum(Enum):
     ATTEMPT = auto()
 
 
+QUIZ = {}
+
+
 def get_question(file_name):
     quiz = {}
     with open(file_name, "r", encoding="KOI8-R") as f:
@@ -28,11 +31,11 @@ def get_questions_files(dir_name):
 
 
 def get_random_question():
-    quiz = {}
-    for quiz_file in get_questions_files("questions/"):
-        quiz.update(get_question(quiz_file))
-    question = random.choice(list(quiz.keys()))
-    return question, quiz[question]
+    if not QUIZ:
+        for quiz_file in get_questions_files("questions/"):
+            QUIZ.update(get_question(quiz_file))
+    question = random.choice(list(QUIZ.keys()))
+    return question, QUIZ[question]
 
 
 def reg_user_question(redis_db, prefix, user_id):
