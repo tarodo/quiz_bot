@@ -12,13 +12,8 @@ from redis_conn import get_redis
 PLATFORM_PREFIX = "tg"
 
 
-def chunks_generators(buttons, chunks_number):
-    for button in range(0, len(buttons), chunks_number):
-        yield buttons[button : button + chunks_number]
-
-
 def keyboard_maker(buttons, number):
-    keyboard = list(chunks_generators(buttons, number))
+    keyboard = [buttons[button: button + number] for button in range(0, len(buttons), number)]
     markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True, one_time_keyboard=True)
     return markup
 
