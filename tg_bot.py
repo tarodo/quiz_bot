@@ -1,4 +1,3 @@
-import logging
 import os
 
 from environs import Env
@@ -8,12 +7,6 @@ from telegram.ext import (CommandHandler, ConversationHandler, Filters,
 
 from quiz import StateEnum, get_correct_answer, reg_user_question
 from redis_conn import get_redis
-
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-)
-
-logger = logging.getLogger(__name__)
 
 
 PLATFORM_PREFIX = "tg"
