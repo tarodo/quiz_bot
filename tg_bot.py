@@ -19,7 +19,7 @@ def keyboard_maker(buttons, number):
 
 
 def start(update, context):
-    buttons = ["Новый вопрос", "Сдаться", "Мой счёт"]
+    buttons = ["Новый вопрос"]
     markup = keyboard_maker(buttons, 2)
     text = "Привет! Я бот для викторин"
     update.message.reply_text(text, reply_markup=markup)

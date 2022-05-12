@@ -37,7 +37,7 @@ def keyboard_maker(buttons, number):
 
 
 def start(user_id):
-    buttons = ["Новый вопрос", "Сдаться", "Мой счёт"]
+    buttons = ["Новый вопрос"]
     text = "Привет! Я бот для викторин"
     vk_api.messages.send(
         user_id=user_id,
