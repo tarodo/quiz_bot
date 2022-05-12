@@ -25,8 +25,6 @@ def set_user_state(user_id, state):
     redis_db = get_redis()
     if state:
         redis_db.set(f"{PLATFORM_PREFIX}_{user_id}_state", str(state))
-    else:
-        redis_db.delete(f"{PLATFORM_PREFIX}_{user_id}_state")
 
 
 def keyboard_maker(buttons, number):
