@@ -1,13 +1,13 @@
 import logging
 import os
 
-import redis
 from environs import Env
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import (CommandHandler, ConversationHandler, Filters,
                           MessageHandler, Updater)
 
 from quiz import StateEnum, get_correct_answer, reg_user_question
+from redis_conn import get_redis
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
@@ -40,7 +40,7 @@ def start(update, context):
 
 def send_new_question(update, context):
     user_id = update.message.from_user.id
-    question_text = reg_user_question(redis_db, PLATFORM_PREFIX, user_id)
+    question_text = reg_user_question(get_redis(), PLATFORM_PREFIX, user_id)
     update.message.reply_text(question_text)
     return StateEnum.ATTEMPT
 
@@ -54,7 +54,7 @@ def handle_first_choice(update, context):
 def handle_solution_attempt(update, context):
     attempt = update.message.text
     user_id = update.message.from_user.id
-    correct_answer = get_correct_answer(redis_db, PLATFORM_PREFIX, user_id)
+    correct_answer = get_correct_answer(get_redis(), PLATFORM_PREFIX, user_id)
     if attempt.lower() == correct_answer.lower():
         text = "Маладес"
         update.message.reply_text(text)
@@ -71,7 +71,7 @@ def handle_solution_attempt(update, context):
 
 def handle_giving_up(update, context):
     user_id = update.message.from_user.id
-    answer = get_correct_answer(redis_db, PLATFORM_PREFIX, user_id)
+    answer = get_correct_answer(get_redis(), PLATFORM_PREFIX, user_id)
     text = f"Правильный ответ : {answer}"
     update.message.reply_text(text)
     return send_new_question(update, context)
@@ -87,10 +87,6 @@ def cancel(update, context):
 if __name__ == "__main__":
     env = Env()
     env.read_env()
-    REDIS_URL = env.str("REDIS_URL")
-    REDIS_PORT = env.str("REDIS_PORT")
-    REDIS_PASS = env.str("REDIS_PASS")
-    redis_db = redis.Redis(host=REDIS_URL, port=REDIS_PORT, db=0, password=REDIS_PASS)
 
     TG_TOKEN = os.getenv("TELEGRAM_TOKEN")
     updater = Updater(TG_TOKEN)

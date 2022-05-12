@@ -8,11 +8,13 @@ from vk_api.keyboard import VkKeyboard
 from vk_api.longpoll import VkEventType, VkLongPoll
 
 from quiz import StateEnum, get_correct_answer, reg_user_question
+from redis_conn import get_redis
 
 PLATFORM_PREFIX = "vk"
 
 
 def get_user_state(user_id):
+    redis_db = get_redis()
     cur_state = redis_db.get(f"{PLATFORM_PREFIX}_{user_id}_state")
     if not cur_state:
         return None
@@ -20,6 +22,7 @@ def get_user_state(user_id):
 
 
 def set_user_state(user_id, state):
+    redis_db = get_redis()
     if state:
         redis_db.set(f"{PLATFORM_PREFIX}_{user_id}_state", str(state))
     else:
@@ -53,7 +56,7 @@ def handle_first_choice(user_id, user_message):
 
 
 def send_new_question(user_id):
-    question_text = reg_user_question(redis_db, PLATFORM_PREFIX, user_id)
+    question_text = reg_user_question(get_redis(), PLATFORM_PREFIX, user_id)
     vk_api.messages.send(
         user_id=user_id, message=question_text, random_id=random.randint(1, 1000)
     )
@@ -61,7 +64,7 @@ def send_new_question(user_id):
 
 
 def handle_giving_up(user_id):
-    answer = get_correct_answer(redis_db, PLATFORM_PREFIX, user_id)
+    answer = get_correct_answer(get_redis(), PLATFORM_PREFIX, user_id)
     text = f"Правильный ответ : {answer}"
     vk_api.messages.send(
         user_id=user_id, message=text, random_id=random.randint(1, 1000)
@@ -72,7 +75,7 @@ def handle_giving_up(user_id):
 def handle_solution_attempt(user_id, attempt):
     if attempt == "Сдаться":
         return handle_giving_up(user_id)
-    correct_answer = get_correct_answer(redis_db, PLATFORM_PREFIX, user_id)
+    correct_answer = get_correct_answer(get_redis(), PLATFORM_PREFIX, user_id)
     if attempt.lower() == correct_answer.lower():
         text = "Маладес"
         vk_api.messages.send(
@@ -110,11 +113,6 @@ def quiz(event, vk_api):
 if __name__ == "__main__":
     env = Env()
     env.read_env()
-
-    REDIS_URL = env.str("REDIS_URL")
-    REDIS_PORT = env.str("REDIS_PORT")
-    REDIS_PASS = env.str("REDIS_PASS")
-    redis_db = redis.Redis(host=REDIS_URL, port=REDIS_PORT, db=0, password=REDIS_PASS)
 
     VK_TOKEN = os.getenv("VK_TOKEN")
     vk_session = VkApi(token=VK_TOKEN)
