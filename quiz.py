@@ -23,11 +23,7 @@ def get_question(file_name):
 
 
 def get_questions_files(dir_name):
-    questions_files = []
-    for path, subdirs, files in os.walk(dir_name):
-        for filename in files:
-            file_path = os.path.join(path, filename)
-            questions_files.append(file_path)
+    questions_files = [os.path.join(dir_name, f) for f in os.listdir(dir_name)]
     return questions_files
 
 
