@@ -7,7 +7,7 @@ from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import (CommandHandler, ConversationHandler, Filters,
                           MessageHandler, Updater)
 
-from main import StateEnum, get_correct_answer, reg_user_question
+from quiz import StateEnum, get_correct_answer, reg_user_question
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO

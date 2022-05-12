@@ -7,7 +7,7 @@ from vk_api import VkApi
 from vk_api.keyboard import VkKeyboard
 from vk_api.longpoll import VkEventType, VkLongPoll
 
-from main import StateEnum, get_correct_answer, reg_user_question
+from quiz import StateEnum, get_correct_answer, reg_user_question
 
 PLATFORM_PREFIX = "vk"
 
