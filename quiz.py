@@ -55,15 +55,3 @@ def get_correct_answer(redis_db, prefix, user_id):
     if answer:
         answer = answer.decode("UTF-8")
         return clear_answer(answer)
-
-
-def main():
-    quiz = {}
-    for quiz_file in get_questions_files("questions/"):
-        quiz.update(get_question(quiz_file))
-
-    print(get_random_question())
-
-
-if __name__ == "__main__":
-    main()
