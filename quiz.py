@@ -25,14 +25,10 @@ def get_question(file_name):
     return quiz
 
 
-def get_questions_files(dir_name):
-    questions_files = [os.path.join(dir_name, f) for f in os.listdir(dir_name)]
-    return questions_files
-
-
 def get_random_question():
     if not QUIZ:
-        for quiz_file in get_questions_files("questions/"):
+        dir_name = "questions/"
+        for quiz_file in [os.path.join(dir_name, f) for f in os.listdir(dir_name)]:
             QUIZ.update(get_question(quiz_file))
     question = random.choice(list(QUIZ.keys()))
     return question, QUIZ[question]
