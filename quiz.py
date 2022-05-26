@@ -8,7 +8,7 @@ class StateEnum(Enum):
     ATTEMPT = auto()
 
 
-QUIZ = {}
+DIR_NAME = "questions/"
 
 
 def get_question(file_name):
@@ -25,17 +25,20 @@ def get_question(file_name):
     return quiz
 
 
-def get_random_question():
-    if not QUIZ:
-        dir_name = "questions/"
-        for quiz_file in [os.path.join(dir_name, f) for f in os.listdir(dir_name)]:
-            QUIZ.update(get_question(quiz_file))
-    question = random.choice(list(QUIZ.keys()))
-    return question, QUIZ[question]
+def get_all_questions():
+    questions = {}
+    for quiz_file in [os.path.join(DIR_NAME, f) for f in os.listdir(DIR_NAME)]:
+        questions.update(get_question(quiz_file))
+    return questions
 
 
-def reg_user_question(redis_db, prefix, user_id):
-    question_text, answer_text = get_random_question()
+def get_random_question(questions):
+    question = random.choice(list(questions.keys()))
+    return question, questions[question]
+
+
+def reg_user_question(redis_db, prefix, user_id, questions):
+    question_text, answer_text = get_random_question(questions)
     redis_db.set(f"{prefix}_{user_id}_question", question_text)
     redis_db.set(f"{prefix}_{user_id}_answer", answer_text)
     return question_text

@@ -7,10 +7,11 @@ from vk_api import VkApi
 from vk_api.keyboard import VkKeyboard
 from vk_api.longpoll import VkEventType, VkLongPoll
 
-from quiz import StateEnum, get_correct_answer, reg_user_question
+from quiz import StateEnum, get_correct_answer, reg_user_question, get_all_questions
 from redis_conn import get_redis
 
 PLATFORM_PREFIX = "vk"
+QUESTIONS = {}
 
 
 def get_user_state(user_id):
@@ -48,7 +49,9 @@ def handle_first_choice(user_id, user_message):
 
 
 def send_new_question(user_id):
-    question_text = reg_user_question(get_redis(), PLATFORM_PREFIX, user_id)
+    if not QUESTIONS:
+        QUESTIONS.update(get_all_questions())
+    question_text = reg_user_question(get_redis(), PLATFORM_PREFIX, user_id, QUESTIONS)
     vk_api.messages.send(
         user_id=user_id, message=question_text, random_id=random.randint(1, 1000)
     )

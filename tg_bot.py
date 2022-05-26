@@ -5,11 +5,11 @@ from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import (CommandHandler, ConversationHandler, Filters,
                           MessageHandler, Updater)
 
-from quiz import StateEnum, get_correct_answer, reg_user_question
+from quiz import StateEnum, get_correct_answer, reg_user_question, get_all_questions
 from redis_conn import get_redis
 
-
 PLATFORM_PREFIX = "tg"
+QUESTIONS = {}
 
 
 def keyboard_maker(buttons, number):
@@ -28,7 +28,9 @@ def start(update, context):
 
 def send_new_question(update, context):
     user_id = update.message.from_user.id
-    question_text = reg_user_question(get_redis(), PLATFORM_PREFIX, user_id)
+    if not QUESTIONS:
+        QUESTIONS.update(get_all_questions())
+    question_text = reg_user_question(get_redis(), PLATFORM_PREFIX, user_id, QUESTIONS)
     update.message.reply_text(question_text)
     return StateEnum.ATTEMPT
 
