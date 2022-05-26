@@ -21,12 +21,6 @@ def get_user_state(user_id):
     return int(cur_state)
 
 
-def set_user_state(user_id, state):
-    redis_db = get_redis()
-    if state:
-        redis_db.set(f"{PLATFORM_PREFIX}_{user_id}_state", str(state))
-
-
 def keyboard_maker(buttons, number):
     keyboard = VkKeyboard(one_time=True)
     for idx, button in enumerate(buttons):
@@ -105,7 +99,7 @@ def quiz(event, vk_api):
         next_state = handle_first_choice(user_id, user_message)
     elif user_state == StateEnum.ATTEMPT.value:
         next_state = handle_solution_attempt(user_id, user_message)
-    set_user_state(user_id, next_state)
+    get_redis().set(f"{PLATFORM_PREFIX}_{user_id}_state", str(next_state))
 
 
 if __name__ == "__main__":
