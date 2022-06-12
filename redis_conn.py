@@ -10,3 +10,6 @@ REDIS_PASS = env.str("REDIS_PASS")
 
 def get_redis(db=0):
     return redis.Redis(host=REDIS_URL, port=REDIS_PORT, db=db, password=REDIS_PASS)
+
+
+conn = get_redis()

@@ -1,4 +1,5 @@
 import os
+from functools import partial
 
 from environs import Env
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
@@ -6,10 +7,9 @@ from telegram.ext import (CommandHandler, ConversationHandler, Filters,
                           MessageHandler, Updater)
 
 from quiz import StateEnum, get_correct_answer, reg_user_question, get_all_questions
-from redis_conn import get_redis
+from redis_conn import conn
 
 PLATFORM_PREFIX = "tg"
-QUESTIONS = {}
 
 
 def keyboard_maker(buttons, number):
@@ -26,13 +26,14 @@ def start(update, context):
     return StateEnum.FIRST_CHOOSING
 
 
-def send_new_question(update, context):
+def send_new_question2(questions, update, context):
     user_id = update.message.from_user.id
-    if not QUESTIONS:
-        QUESTIONS.update(get_all_questions())
-    question_text = reg_user_question(get_redis(), PLATFORM_PREFIX, user_id, QUESTIONS)
+    question_text = reg_user_question(conn, PLATFORM_PREFIX, user_id, questions)
     update.message.reply_text(question_text)
     return StateEnum.ATTEMPT
+
+
+send_new_question = partial(send_new_question2, get_all_questions())
 
 
 def handle_first_choice(update, context):
@@ -44,7 +45,7 @@ def handle_first_choice(update, context):
 def handle_solution_attempt(update, context):
     attempt = update.message.text
     user_id = update.message.from_user.id
-    correct_answer = get_correct_answer(get_redis(), PLATFORM_PREFIX, user_id)
+    correct_answer = get_correct_answer(conn, PLATFORM_PREFIX, user_id)
     if attempt.lower() == correct_answer.lower():
         text = "Маладес"
         update.message.reply_text(text)
@@ -61,7 +62,7 @@ def handle_solution_attempt(update, context):
 
 def handle_giving_up(update, context):
     user_id = update.message.from_user.id
-    answer = get_correct_answer(get_redis(), PLATFORM_PREFIX, user_id)
+    answer = get_correct_answer(conn, PLATFORM_PREFIX, user_id)
     text = f"Правильный ответ : {answer}"
     update.message.reply_text(text)
     return send_new_question(update, context)
