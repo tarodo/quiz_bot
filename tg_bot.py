@@ -1,19 +1,22 @@
 import os
 from functools import partial
 
+import redis
 from environs import Env
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import (CommandHandler, ConversationHandler, Filters,
                           MessageHandler, Updater)
 
-from quiz import StateEnum, get_correct_answer, reg_user_question, get_all_questions
-import redis
+from quiz import (StateEnum, get_all_questions, get_correct_answer,
+                  reg_user_question)
 
 PLATFORM_PREFIX = "tg"
 
 
 def keyboard_maker(buttons, number):
-    keyboard = [buttons[button: button + number] for button in range(0, len(buttons), number)]
+    keyboard = [
+        buttons[button : button + number] for button in range(0, len(buttons), number)
+    ]
     markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True, one_time_keyboard=True)
     return markup
 
@@ -99,10 +102,12 @@ if __name__ == "__main__":
             ],
             StateEnum.ATTEMPT: [
                 MessageHandler(
-                    Filters.text("Сдаться") & ~Filters.command, partial(handle_giving_up, all_questions, redis_conn)
+                    Filters.text("Сдаться") & ~Filters.command,
+                    partial(handle_giving_up, all_questions, redis_conn),
                 ),
                 MessageHandler(
-                    Filters.text & ~Filters.command, partial(handle_solution_attempt, redis_conn)
+                    Filters.text & ~Filters.command,
+                    partial(handle_solution_attempt, redis_conn),
                 ),
             ],
         },
