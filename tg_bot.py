@@ -26,20 +26,17 @@ def start(update, context):
     return StateEnum.FIRST_CHOOSING
 
 
-def send_new_question2(questions, update, context):
+def send_new_question(questions, update, context):
     user_id = update.message.from_user.id
     question_text = reg_user_question(conn, PLATFORM_PREFIX, user_id, questions)
     update.message.reply_text(question_text)
     return StateEnum.ATTEMPT
 
 
-send_new_question = partial(send_new_question2, get_all_questions())
-
-
-def handle_first_choice(update, context):
+def handle_first_choice(questions, update, context):
     user_message = update.message.text
-    if user_message == "Новый вопрос":
-        return send_new_question(update, context)
+    if user_message == "Новый вопрос 00000":
+        return send_new_question(questions, update, context)
 
 
 def handle_solution_attempt(update, context):
@@ -60,12 +57,12 @@ def handle_solution_attempt(update, context):
     return StateEnum.ATTEMPT
 
 
-def handle_giving_up(update, context):
+def handle_giving_up(questions, update, context):
     user_id = update.message.from_user.id
     answer = get_correct_answer(conn, PLATFORM_PREFIX, user_id)
     text = f"Правильный ответ : {answer}"
     update.message.reply_text(text)
-    return send_new_question(update, context)
+    return send_new_question(questions, update, context)
 
 
 def cancel(update, context):
@@ -84,18 +81,20 @@ if __name__ == "__main__":
 
     dp = updater.dispatcher
 
+    questions = get_all_questions()
+
     handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
         states={
             StateEnum.FIRST_CHOOSING: [
                 MessageHandler(
                     Filters.text & ~Filters.command,
-                    handle_first_choice,
+                    partial(handle_first_choice, questions),
                 )
             ],
             StateEnum.ATTEMPT: [
                 MessageHandler(
-                    Filters.text("Сдаться") & ~Filters.command, handle_giving_up
+                    Filters.text("Сдаться") & ~Filters.command, partial(handle_giving_up, questions)
                 ),
                 MessageHandler(
                     Filters.text & ~Filters.command, handle_solution_attempt
