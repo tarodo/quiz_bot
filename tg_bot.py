@@ -81,7 +81,7 @@ if __name__ == "__main__":
 
     dp = updater.dispatcher
 
-    questions = get_all_questions()
+    all_questions = get_all_questions()
 
     REDIS_URL = env.str("REDIS_URL")
     REDIS_PORT = env.str("REDIS_PORT")
@@ -94,12 +94,12 @@ if __name__ == "__main__":
             StateEnum.FIRST_CHOOSING: [
                 MessageHandler(
                     Filters.text & ~Filters.command,
-                    partial(handle_first_choice, questions, redis_conn),
+                    partial(handle_first_choice, all_questions, redis_conn),
                 )
             ],
             StateEnum.ATTEMPT: [
                 MessageHandler(
-                    Filters.text("Сдаться") & ~Filters.command, partial(handle_giving_up, questions, redis_conn)
+                    Filters.text("Сдаться") & ~Filters.command, partial(handle_giving_up, all_questions, redis_conn)
                 ),
                 MessageHandler(
                     Filters.text & ~Filters.command, partial(handle_solution_attempt, redis_conn)

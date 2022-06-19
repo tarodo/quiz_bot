@@ -29,6 +29,7 @@ def get_all_questions():
     questions = {}
     for quiz_file in [os.path.join(DIR_NAME, f) for f in os.listdir(DIR_NAME)]:
         questions.update(get_question(quiz_file))
+    print(f"{len(questions)=}")
     return questions
 
 
