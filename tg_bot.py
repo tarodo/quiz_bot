@@ -86,7 +86,7 @@ if __name__ == "__main__":
     REDIS_URL = env.str("REDIS_URL")
     REDIS_PORT = env.str("REDIS_PORT")
     REDIS_PASS = env.str("REDIS_PASS")
-    conn = redis.Redis(host=REDIS_URL, port=REDIS_PORT, db=0, password=REDIS_PASS)
+    redis_conn = redis.Redis(host=REDIS_URL, port=REDIS_PORT, db=0, password=REDIS_PASS)
 
     handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
@@ -94,15 +94,15 @@ if __name__ == "__main__":
             StateEnum.FIRST_CHOOSING: [
                 MessageHandler(
                     Filters.text & ~Filters.command,
-                    partial(handle_first_choice, questions, conn),
+                    partial(handle_first_choice, questions, redis_conn),
                 )
             ],
             StateEnum.ATTEMPT: [
                 MessageHandler(
-                    Filters.text("Сдаться") & ~Filters.command, partial(handle_giving_up, questions, conn)
+                    Filters.text("Сдаться") & ~Filters.command, partial(handle_giving_up, questions, redis_conn)
                 ),
                 MessageHandler(
-                    Filters.text & ~Filters.command, partial(handle_solution_attempt, conn)
+                    Filters.text & ~Filters.command, partial(handle_solution_attempt, redis_conn)
                 ),
             ],
         },
