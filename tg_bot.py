@@ -35,7 +35,7 @@ def send_new_question(questions, update, context):
 
 def handle_first_choice(questions, update, context):
     user_message = update.message.text
-    if user_message == "Новый вопрос 00000":
+    if user_message == "Новый вопрос":
         return send_new_question(questions, update, context)
 
 
