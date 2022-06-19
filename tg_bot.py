@@ -7,7 +7,7 @@ from telegram.ext import (CommandHandler, ConversationHandler, Filters,
                           MessageHandler, Updater)
 
 from quiz import StateEnum, get_correct_answer, reg_user_question, get_all_questions
-from redis_conn import conn
+import redis
 
 PLATFORM_PREFIX = "tg"
 
@@ -26,20 +26,20 @@ def start(update, context):
     return StateEnum.FIRST_CHOOSING
 
 
-def send_new_question(questions, update, context):
+def send_new_question(questions, conn, update, context):
     user_id = update.message.from_user.id
     question_text = reg_user_question(conn, PLATFORM_PREFIX, user_id, questions)
     update.message.reply_text(question_text)
     return StateEnum.ATTEMPT
 
 
-def handle_first_choice(questions, update, context):
+def handle_first_choice(questions, conn, update, context):
     user_message = update.message.text
     if user_message == "Новый вопрос":
-        return send_new_question(questions, update, context)
+        return send_new_question(questions, conn, update, context)
 
 
-def handle_solution_attempt(update, context):
+def handle_solution_attempt(conn, update, context):
     attempt = update.message.text
     user_id = update.message.from_user.id
     correct_answer = get_correct_answer(conn, PLATFORM_PREFIX, user_id)
@@ -57,12 +57,12 @@ def handle_solution_attempt(update, context):
     return StateEnum.ATTEMPT
 
 
-def handle_giving_up(questions, update, context):
+def handle_giving_up(questions, conn, update, context):
     user_id = update.message.from_user.id
     answer = get_correct_answer(conn, PLATFORM_PREFIX, user_id)
     text = f"Правильный ответ : {answer}"
     update.message.reply_text(text)
-    return send_new_question(questions, update, context)
+    return send_new_question(questions, conn, update, context)
 
 
 def cancel(update, context):
@@ -83,21 +83,26 @@ if __name__ == "__main__":
 
     questions = get_all_questions()
 
+    REDIS_URL = env.str("REDIS_URL")
+    REDIS_PORT = env.str("REDIS_PORT")
+    REDIS_PASS = env.str("REDIS_PASS")
+    conn = redis.Redis(host=REDIS_URL, port=REDIS_PORT, db=0, password=REDIS_PASS)
+
     handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
         states={
             StateEnum.FIRST_CHOOSING: [
                 MessageHandler(
                     Filters.text & ~Filters.command,
-                    partial(handle_first_choice, questions),
+                    partial(handle_first_choice, questions, conn),
                 )
             ],
             StateEnum.ATTEMPT: [
                 MessageHandler(
-                    Filters.text("Сдаться") & ~Filters.command, partial(handle_giving_up, questions)
+                    Filters.text("Сдаться") & ~Filters.command, partial(handle_giving_up, questions, conn)
                 ),
                 MessageHandler(
-                    Filters.text & ~Filters.command, handle_solution_attempt
+                    Filters.text & ~Filters.command, partial(handle_solution_attempt, conn)
                 ),
             ],
         },
